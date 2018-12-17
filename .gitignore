@@ -1,3 +1,4 @@
 node_modules/
 .env
 XSplitVCamFrameExtractor.exe
+index.js

@@ -1,14 +1,16 @@
 require('dotenv').config();
 const handler = require('serve-handler');
-const kill = require('kill-port');
 const micro = require('micro');
-const { execFile } = require('child_process');
-const port = process.env.LOCAL_PORT;
+const spawn = require('child_process').spawn;
 
 // call after the server is done
 const startExe = () => {
   console.log(`${process.env.APP_EXE} start`);
-  execFile(`${process.env.APP_EXE}`, (err, data) => {
+  const proc = spawn(APP_EXE, {
+    shell: true
+  });
+
+  proc.on('exit', () => {
     process.exit();
   });
 };
@@ -19,16 +21,23 @@ const server = micro(async (req, res) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`static server is running at http://localhost:${port}`);
-  startExe();
+server.listen(process.env.PORT, () => {
+  console.log(
+    `static server is running at http://localhost:${process.env.PORT}`
+  );
+});
+
+process.on('uncaughtException', err => {
+  console.log('err on uncaughtException', err);
+});
+
+process.on('error', err => {
+  console.log('process on error: ', err);
 });
 
 // while exit
 process.on('exit', () => {
-  console.log(`http://localhost:${port} server will close.`);
-  // kills the port
-  kill(port)
-    .then(console.log)
-    .catch(console.log);
+  console.log(`http://localhost:${process.env.PORT} server will close.`);
 });
+
+startExe();
